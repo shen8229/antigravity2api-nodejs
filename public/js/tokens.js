@@ -1,14 +1,18 @@
 // Token管理：增删改查、启用禁用
 
 let cachedTokens = [];
-let currentFilter = 'all'; // 'all', 'enabled', 'disabled'
+let currentFilter = localStorage.getItem('tokenFilter') || 'all'; // 'all', 'enabled', 'disabled'
 let skipAnimation = false; // 是否跳过动画
 
-// 筛选 Token
-function filterTokens(filter) {
-    currentFilter = filter;
-    
-    // 更新筛选按钮状态
+// 初始化筛选状态
+function initFilterState() {
+    const savedFilter = localStorage.getItem('tokenFilter') || 'all';
+    currentFilter = savedFilter;
+    updateFilterButtonState(savedFilter);
+}
+
+// 更新筛选按钮状态
+function updateFilterButtonState(filter) {
     document.querySelectorAll('.stat-item').forEach(item => {
         item.classList.remove('active');
     });
@@ -17,6 +21,14 @@ function filterTokens(filter) {
     if (activeElement) {
         activeElement.closest('.stat-item').classList.add('active');
     }
+}
+
+// 筛选 Token
+function filterTokens(filter) {
+    currentFilter = filter;
+    localStorage.setItem('tokenFilter', filter); // 持久化筛选状态
+    
+    updateFilterButtonState(filter);
     
     // 重新渲染
     renderTokens(cachedTokens);

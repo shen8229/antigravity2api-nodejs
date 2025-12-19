@@ -3,6 +3,7 @@
 // 页面加载时初始化
 initFontSize();
 initSensitiveInfo();
+initFilterState(); // 恢复筛选状态
 
 // 如果已登录，显示主内容
 if (authToken) {
