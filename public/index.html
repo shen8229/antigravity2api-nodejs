@@ -95,15 +95,15 @@ html.tab-settings .tab[data-tab="settings"] {
                     <!-- 统计卡片 + 操作按钮 合并 -->
                     <div class="top-bar">
                         <div class="stats-inline">
-                            <div class="stat-item">
+                            <div class="stat-item clickable active" onclick="filterTokens('all')">
                                 <span class="stat-num" id="totalTokens">0</span>
                                 <span class="stat-text">总数</span>
                             </div>
-                            <div class="stat-item success">
+                            <div class="stat-item success clickable" onclick="filterTokens('enabled')">
                                 <span class="stat-num" id="enabledTokens">0</span>
                                 <span class="stat-text">启用</span>
                             </div>
-                            <div class="stat-item danger">
+                            <div class="stat-item danger clickable" onclick="filterTokens('disabled')">
                                 <span class="stat-num" id="disabledTokens">0</span>
                                 <span class="stat-text">禁用</span>
                             </div>

@@ -268,24 +268,27 @@ button.loading::after {
 }
 
 .tabs { display: flex; gap: 0.25rem; }
-.tab { 
-    background: transparent; 
-    color: var(--text-light); 
-    border: none; 
-    padding: 0.5rem 1rem; 
-    border-radius: 0.375rem; 
-    cursor: pointer; 
-    font-weight: 600; 
-    font-size: 0.875rem; 
-    transition: all 0.2s; 
-    min-height: 36px; 
-    box-shadow: none; 
+.tab {
+    background: transparent;
+    color: var(--text-light);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 36px;
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
 }
-.tab:hover { background: var(--bg); color: var(--text); }
+.tab:hover { background: var(--bg); color: var(--text); transform: translateY(-1px); }
+.tab:active { transform: translateY(0) scale(0.98); }
 .tab.active {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
-    box-shadow: 0 2px 6px rgba(8,145,178,0.25);
+    box-shadow: 0 2px 8px rgba(8,145,178,0.3);
 }
 
 .content {
@@ -303,12 +306,29 @@ button.loading::after {
     min-height: 0;
     overflow: hidden;
 }
+#tokensPage.page-enter {
+    animation: pageSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 #settingsPage {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     padding-right: 4px;
+}
+#settingsPage.page-enter {
+    animation: pageSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 /* 顶部栏 - 统计+操作 */
@@ -336,6 +356,26 @@ button.loading::after {
     display: flex;
     align-items: baseline;
     gap: 0.25rem;
+}
+.stat-item.clickable {
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1.5px solid transparent;
+    position: relative;
+}
+.stat-item.clickable:hover {
+    background: rgba(8,145,178,0.1);
+    transform: translateY(-1px);
+}
+.stat-item.clickable:active {
+    transform: translateY(0) scale(0.98);
+}
+.stat-item.clickable.active {
+    background: rgba(8,145,178,0.15);
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(8,145,178,0.2);
 }
 .stat-num {
     font-size: 1.25rem;
@@ -395,29 +435,52 @@ button.loading::after {
     min-height: 0;
 }
 .token-card {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.85);
     border: 1.5px solid var(--border);
     border-radius: 0.75rem;
     padding: 0.875rem;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    animation: cardFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+/* 为每个卡片添加延迟动画 */
+.token-card:nth-child(1) { animation-delay: 0.02s; }
+.token-card:nth-child(2) { animation-delay: 0.04s; }
+.token-card:nth-child(3) { animation-delay: 0.06s; }
+.token-card:nth-child(4) { animation-delay: 0.08s; }
+.token-card:nth-child(5) { animation-delay: 0.1s; }
+.token-card:nth-child(6) { animation-delay: 0.12s; }
+.token-card:nth-child(7) { animation-delay: 0.14s; }
+.token-card:nth-child(8) { animation-delay: 0.16s; }
+.token-card:nth-child(9) { animation-delay: 0.18s; }
+.token-card:nth-child(10) { animation-delay: 0.2s; }
+.token-card:nth-child(n+11) { animation-delay: 0.22s; }
 @media (prefers-color-scheme: dark) {
     .token-card {
-        background: rgba(30, 41, 59, 0.6);
+        background: rgba(30, 41, 59, 0.85);
     }
 }
 .token-card:hover {
     border-color: var(--primary);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
-    background: rgba(255, 255, 255, 0.85);
-    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-4px) scale(1.01);
     z-index: 1;
     position: relative;
 }
 @media (prefers-color-scheme: dark) {
     .token-card:hover {
-        background: rgba(30, 41, 59, 0.85);
+        background: rgba(30, 41, 59, 0.95);
     }
 }
 .token-card.disabled { opacity: 0.6; }
@@ -546,6 +609,36 @@ button.loading::after {
     border-color: var(--primary);
     transform: none;
 }
+.btn-icon.btn-refresh {
+    width: 18px;
+    height: 18px;
+    min-height: 18px;
+    min-width: 18px;
+    font-size: 0.6rem;
+    margin-left: auto;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    opacity: 0.5;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+}
+.btn-icon.btn-refresh:hover:not(:disabled) {
+    background: transparent;
+    color: var(--primary);
+    opacity: 1;
+    transform: rotate(180deg);
+}
+.btn-icon.btn-refresh:active:not(:disabled) {
+    transform: rotate(360deg);
+}
+.btn-icon.btn-refresh:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    color: var(--warning);
+    animation: spin 0.8s linear infinite;
+}
 
 .token-actions { 
     display: flex; 
@@ -575,6 +668,17 @@ button.loading::after {
     align-items: center;
     justify-content: center;
     min-height: 300px;
+    animation: emptyFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes emptyFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 .empty-state-icon { font-size: 3rem; margin-bottom: 0.75rem; opacity: 0.5; }
 .empty-state-text { font-size: 1rem; font-weight: 500; margin-bottom: 0.375rem; }
@@ -1183,11 +1287,42 @@ input:checked + .slider:before {
     color: var(--text-light);
     flex-shrink: 0;
     margin-left: 0.5rem;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.quota-inline-toggle.expanded {
+    transform: rotate(180deg);
 }
 .quota-inline-detail {
     border-top: 1px solid var(--border);
     padding: 0.5rem;
     background: var(--bg);
+    animation: slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: scaleY(0.8);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+        max-height: 500px;
+    }
+}
+.quota-inline-detail.collapsing {
+    animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+    to {
+        opacity: 0;
+        transform: scaleY(0.8);
+    }
 }
 .quota-detail-grid {
     display: flex;
@@ -1264,11 +1399,9 @@ input:checked + .slider:before {
 
 .hidden { display: none !important; }
 
-/* 敏感信息模糊 */
-.sensitive-info.blurred {
-    filter: blur(4px);
-    user-select: none;
-    cursor: default;
+/* 敏感信息行 - 隐藏时不显示 */
+.sensitive-row {
+    transition: opacity 0.2s, max-height 0.2s;
 }
 
 /* 响应式 */

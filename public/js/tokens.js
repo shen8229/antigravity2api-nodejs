@@ -1,6 +1,25 @@
 // Token管理：增删改查、启用禁用
 
 let cachedTokens = [];
+let currentFilter = 'all'; // 'all', 'enabled', 'disabled'
+
+// 筛选 Token
+function filterTokens(filter) {
+    currentFilter = filter;
+    
+    // 更新筛选按钮状态
+    document.querySelectorAll('.stat-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    const filterMap = { 'all': 'totalTokens', 'enabled': 'enabledTokens', 'disabled': 'disabledTokens' };
+    const activeElement = document.getElementById(filterMap[filter]);
+    if (activeElement) {
+        activeElement.closest('.stat-item').classList.add('active');
+    }
+    
+    // 重新渲染
+    renderTokens(cachedTokens);
+}
 
 async function loadTokens() {
     try {
@@ -23,19 +42,33 @@ async function loadTokens() {
 const refreshingTokens = new Set();
 
 function renderTokens(tokens) {
-    cachedTokens = tokens;
+    // 只在首次加载时更新缓存
+    if (tokens !== cachedTokens) {
+        cachedTokens = tokens;
+    }
     
     document.getElementById('totalTokens').textContent = tokens.length;
     document.getElementById('enabledTokens').textContent = tokens.filter(t => t.enable).length;
     document.getElementById('disabledTokens').textContent = tokens.filter(t => !t.enable).length;
     
+    // 根据筛选条件过滤
+    let filteredTokens = tokens;
+    if (currentFilter === 'enabled') {
+        filteredTokens = tokens.filter(t => t.enable);
+    } else if (currentFilter === 'disabled') {
+        filteredTokens = tokens.filter(t => !t.enable);
+    }
+    
     const tokenList = document.getElementById('tokenList');
-    if (tokens.length === 0) {
+    if (filteredTokens.length === 0) {
+        const emptyText = currentFilter === 'all' ? '暂无Token' :
+                          currentFilter === 'enabled' ? '暂无启用的Token' : '暂无禁用的Token';
+        const emptyHint = currentFilter === 'all' ? '点击上方OAuth按钮添加Token' : '点击上方"总数"查看全部';
         tokenList.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">📦</div>
-                <div class="empty-state-text">暂无Token</div>
-                <div class="empty-state-hint">点击上方OAuth按钮添加Token</div>
+                <div class="empty-state-text">${emptyText}</div>
+                <div class="empty-state-hint">${emptyHint}</div>
             </div>
         `;
         return;
@@ -44,12 +77,16 @@ function renderTokens(tokens) {
     // 收集需要自动刷新的过期 Token
     const expiredTokensToRefresh = [];
     
-    tokenList.innerHTML = tokens.map(token => {
+    tokenList.innerHTML = filteredTokens.map((token, index) => {
         const expireTime = new Date(token.timestamp + token.expires_in * 1000);
         const isExpired = expireTime < new Date();
         const isRefreshing = refreshingTokens.has(token.refresh_token);
         const expireStr = expireTime.toLocaleString('zh-CN', {month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'});
         const cardId = token.refresh_token.substring(0, 8);
+        
+        // 计算在原始列表中的序号（基于添加顺序）
+        const originalIndex = cachedTokens.findIndex(t => t.refresh_token === token.refresh_token);
+        const tokenNumber = originalIndex + 1;
         
         // 如果已过期且启用状态，加入待刷新列表
         if (isExpired && token.enable && !isRefreshing) {
@@ -72,20 +109,20 @@ function renderTokens(tokens) {
                 </span>
                 <div class="token-header-right">
                     <button class="btn-icon" onclick="showTokenDetail('${safeRefreshToken}')" title="编辑全部">✏️</button>
-                    <span class="token-id">#${escapeHtml(token.refresh_token.substring(0, 6))}</span>
+                    <span class="token-id">#${tokenNumber}</span>
                 </div>
             </div>
             <div class="token-info">
-                <div class="info-row">
+                <div class="info-row sensitive-row">
                     <span class="info-label">🎫</span>
                     <span class="info-value sensitive-info" title="${safeAccessTokenSuffix}">${safeAccessTokenSuffix}</span>
                 </div>
-                <div class="info-row editable" onclick="editField(event, '${safeRefreshToken}', 'projectId', '${safeProjectIdJs}')" title="点击编辑">
+                <div class="info-row editable sensitive-row" onclick="editField(event, '${safeRefreshToken}', 'projectId', '${safeProjectIdJs}')" title="点击编辑">
                     <span class="info-label">📦</span>
                     <span class="info-value sensitive-info">${safeProjectId || '点击设置'}</span>
                     <span class="info-edit-icon">✏️</span>
                 </div>
-                <div class="info-row editable" onclick="editField(event, '${safeRefreshToken}', 'email', '${safeEmailJs}')" title="点击编辑">
+                <div class="info-row editable sensitive-row" onclick="editField(event, '${safeRefreshToken}', 'email', '${safeEmailJs}')" title="点击编辑">
                     <span class="info-label">📧</span>
                     <span class="info-value sensitive-info">${safeEmail || '点击设置'}</span>
                     <span class="info-edit-icon">✏️</span>
@@ -93,6 +130,7 @@ function renderTokens(tokens) {
                 <div class="info-row ${isExpired ? 'expired-text' : ''}" id="expire-row-${escapeHtml(cardId)}">
                     <span class="info-label">⏰</span>
                     <span class="info-value">${isRefreshing ? '🔄 刷新中...' : escapeHtml(expireStr)}${isExpired && !isRefreshing ? ' (已过期)' : ''}</span>
+                    <button class="btn-icon btn-refresh" onclick="manualRefreshToken('${safeRefreshToken}')" title="刷新Token" ${isRefreshing ? 'disabled' : ''}>🔄</button>
                 </div>
             </div>
             <div class="token-quota-inline" id="quota-inline-${escapeHtml(cardId)}">
@@ -104,7 +142,6 @@ function renderTokens(tokens) {
             </div>
             <div class="token-actions">
                 <button class="btn btn-info btn-xs" onclick="showQuotaModal('${safeRefreshToken}')" title="查看额度">📊 详情</button>
-                <button class="btn btn-primary btn-xs" onclick="manualRefreshToken('${safeRefreshToken}')" title="刷新Token" ${isRefreshing ? 'disabled' : ''}>🔄 刷新</button>
                 <button class="btn ${token.enable ? 'btn-warning' : 'btn-success'} btn-xs" onclick="toggleToken('${safeRefreshToken}', ${!token.enable})" title="${token.enable ? '禁用' : '启用'}">
                     ${token.enable ? '⏸️ 禁用' : '▶️ 启用'}
                 </button>
@@ -113,7 +150,7 @@ function renderTokens(tokens) {
         </div>
     `}).join('');
     
-    tokens.forEach(token => {
+    filteredTokens.forEach(token => {
         loadTokenQuotaSummary(token.refresh_token);
     });
     

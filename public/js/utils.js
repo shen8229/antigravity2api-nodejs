@@ -74,14 +74,12 @@ function updateSensitiveBtn() {
 }
 
 function updateSensitiveInfoDisplay() {
-    document.querySelectorAll('.sensitive-info').forEach(el => {
+    // 隐藏/显示包含敏感信息的整行
+    document.querySelectorAll('.sensitive-row').forEach(row => {
         if (sensitiveInfoHidden) {
-            el.dataset.original = el.textContent;
-            el.textContent = '••••••';
-            el.classList.add('blurred');
-        } else if (el.dataset.original) {
-            el.textContent = el.dataset.original;
-            el.classList.remove('blurred');
+            row.style.display = 'none';
+        } else {
+            row.style.display = '';
         }
     });
 }

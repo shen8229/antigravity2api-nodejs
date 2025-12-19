@@ -77,15 +77,26 @@ function switchTab(tab, saveState = true) {
         targetTab.classList.add('active');
     }
     
-    // 隐藏所有页面
-    document.getElementById('tokensPage').classList.add('hidden');
-    document.getElementById('settingsPage').classList.add('hidden');
+    const tokensPage = document.getElementById('tokensPage');
+    const settingsPage = document.getElementById('settingsPage');
     
-    // 显示对应页面
+    // 隐藏所有页面并移除动画类
+    tokensPage.classList.add('hidden');
+    tokensPage.classList.remove('page-enter');
+    settingsPage.classList.add('hidden');
+    settingsPage.classList.remove('page-enter');
+    
+    // 显示对应页面并添加入场动画
     if (tab === 'tokens') {
-        document.getElementById('tokensPage').classList.remove('hidden');
+        tokensPage.classList.remove('hidden');
+        // 触发重排以重新播放动画
+        void tokensPage.offsetWidth;
+        tokensPage.classList.add('page-enter');
     } else if (tab === 'settings') {
-        document.getElementById('settingsPage').classList.remove('hidden');
+        settingsPage.classList.remove('hidden');
+        // 触发重排以重新播放动画
+        void settingsPage.offsetWidth;
+        settingsPage.classList.add('page-enter');
         loadConfig();
     }
     

@@ -102,7 +102,8 @@ async function toggleQuotaExpand(cardId, refreshToken) {
     
     if (isHidden) {
         detailEl.classList.remove('hidden');
-        toggleEl.textContent = '▲';
+        detailEl.classList.remove('collapsing');
+        toggleEl.classList.add('expanded');
         
         if (!detailEl.dataset.loaded) {
             detailEl.innerHTML = '<div class="quota-loading-small">加载中...</div>';
@@ -110,8 +111,15 @@ async function toggleQuotaExpand(cardId, refreshToken) {
             detailEl.dataset.loaded = 'true';
         }
     } else {
-        detailEl.classList.add('hidden');
-        toggleEl.textContent = '▼';
+        // 添加收起动画
+        detailEl.classList.add('collapsing');
+        toggleEl.classList.remove('expanded');
+        
+        // 动画结束后隐藏
+        setTimeout(() => {
+            detailEl.classList.add('hidden');
+            detailEl.classList.remove('collapsing');
+        }, 200);
     }
 }
 
