@@ -465,6 +465,10 @@ button.loading::after {
 .token-card:nth-child(9) { animation-delay: 0.18s; }
 .token-card:nth-child(10) { animation-delay: 0.2s; }
 .token-card:nth-child(n+11) { animation-delay: 0.22s; }
+/* 跳过动画 */
+.token-card.no-animation {
+    animation: none !important;
+}
 @media (prefers-color-scheme: dark) {
     .token-card {
         background: rgba(30, 41, 59, 0.85);

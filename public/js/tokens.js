@@ -2,6 +2,7 @@
 
 let cachedTokens = [];
 let currentFilter = 'all'; // 'all', 'enabled', 'disabled'
+let skipAnimation = false; // 是否跳过动画
 
 // 筛选 Token
 function filterTokens(filter) {
@@ -102,7 +103,7 @@ function renderTokens(tokens) {
         const safeEmailJs = escapeJs(token.email || '');
         
         return `
-        <div class="token-card ${!token.enable ? 'disabled' : ''} ${isExpired ? 'expired' : ''} ${isRefreshing ? 'refreshing' : ''}" id="card-${escapeHtml(cardId)}">
+        <div class="token-card ${!token.enable ? 'disabled' : ''} ${isExpired ? 'expired' : ''} ${isRefreshing ? 'refreshing' : ''} ${skipAnimation ? 'no-animation' : ''}" id="card-${escapeHtml(cardId)}">
             <div class="token-header">
                 <span class="status ${token.enable ? 'enabled' : 'disabled'}">
                     ${token.enable ? '✅ 启用' : '❌ 禁用'}
@@ -155,6 +156,9 @@ function renderTokens(tokens) {
     });
     
     updateSensitiveInfoDisplay();
+    
+    // 重置动画跳过标志
+    skipAnimation = false;
     
     // 自动刷新过期的 Token
     if (expiredTokensToRefresh.length > 0) {
@@ -457,6 +461,7 @@ async function toggleToken(refreshToken, enable) {
         hideLoading();
         if (data.success) {
             showToast(`已${action}`, 'success');
+            skipAnimation = true; // 跳过动画
             loadTokens();
         } else {
             showToast(data.message || '操作失败', 'error');
