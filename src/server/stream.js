@@ -9,6 +9,7 @@ import memoryManager, { registerMemoryPoolCleanup } from '../utils/memoryManager
 import { DEFAULT_HEARTBEAT_INTERVAL, LONG_COOLDOWN_THRESHOLD } from '../constants/index.js';
 import tokenCooldownManager from '../auth/token_cooldown_manager.js';
 import quotaManager from '../auth/quota_manager.js';
+import { getGroupKey } from '../utils/modelGroups.js';
 
 // ==================== 心跳机制（防止 CF 超时） ====================
 const HEARTBEAT_INTERVAL = config.server.heartbeatInterval || DEFAULT_HEARTBEAT_INTERVAL;
@@ -346,7 +347,7 @@ export async function with429Retry(fn, maxRetries, options = {}, legacyOnAttempt
           }
 
           if (finalResetTimestamp && finalResetTimestamp > Date.now()) {
-            const groupKey = tokenCooldownManager.getGroupKey(modelId);
+            const groupKey = getGroupKey(modelId);
             const resetDate = new Date(finalResetTimestamp);
             logger.warn(
               `${loggerPrefix}收到 429，恢复时间 ${Math.round(explicitDelayMs / 1000 / 60)} 分钟后，` +
